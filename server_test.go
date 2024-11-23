@@ -25,7 +25,7 @@ func TestGETPlayers(t *testing.T) {
 	server := &PlayerServer{&store}
 
 	t.Run("returns Pepper's score", func(t *testing.T) {
-		request := createGetRequest("/players/Pepper")
+		request := createGetRequest("Pepper")
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
@@ -36,7 +36,7 @@ func TestGETPlayers(t *testing.T) {
 	})
 
 	t.Run("returns Floyd's score", func(t *testing.T) {
-		request := createGetRequest("/players/Floyd")
+		request := createGetRequest("Floyd")
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -46,10 +46,25 @@ func TestGETPlayers(t *testing.T) {
 
 		assertResponseBody(t, got, want)
 	})
+
+	t.Run("returns 404 on missing player", func(t *testing.T) {
+		request := createGetRequest("Apollo")
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		got := response.Code
+		want := http.StatusNotFound
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+
+	})
 }
 
 func createGetRequest(path string) *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, path, nil)
+	req, _ := http.NewRequest(http.MethodGet, "/players/"+path, nil)
 	return req
 }
 
